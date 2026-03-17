@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrapstorm Messenger</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11161c;
+      --panel: #1b2430;
+      --text: #ecf3ff;
+      --muted: #97a6bb;
+      --accent: #4fc3f7;
+      --danger: #ff6b6b;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #223348 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+    .card {
+      width: min(92vw, 520px);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(27, 36, 48, 0.92);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 24px;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .status {
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .error {
+      color: var(--danger);
+    }
+    .meta {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Scrapstorm Messenger</h1>
+    <p id="message">Ищем активный сервер и перенаправляем вас в мессенджер...</p>
+    <div class="status" id="status"></div>
+    <div class="meta" id="meta"></div>
+  </div>
+  <script>
+    async function boot() {
+      const status = document.getElementById('status');
+      const meta = document.getElementById('meta');
+      try {
+        const response = await fetch('./current.json?ts=' + Date.now(), { cache: 'no-store' });
+        const payload = await response.json();
+        if (payload && payload.online !== false && typeof payload.url === 'string' && payload.url) {
+          status.textContent = 'Подключение найдено. Открываем мессенджер...';
+          window.location.replace(payload.url);
+          return;
+        }
+        status.className = 'status error';
+        status.textContent = 'Сервер сейчас офлайн.';
+        meta.textContent = payload && payload.updatedAt ? 'Последнее обновление: ' + payload.updatedAt : '';
+      } catch (error) {
+        status.className = 'status error';
+        status.textContent = 'Не удалось прочитать current.json.';
+        meta.innerHTML = 'Проверьте, что файл опубликован и GitHub Pages включён. При необходимости откройте репозиторий вручную: <a href="https://github.com/BKramar/messanger.scrapstorm.com/tree/main" target="_blank" rel="noreferrer">репозиторий</a>.';
+      }
+    }
+    boot();
+  </script>
+</body>
+</html>
